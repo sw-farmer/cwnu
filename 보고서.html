@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OO마을 커뮤니티 시설 IPA 분석 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">OO마을 주민 커뮤니티 시설 리모델링</h1>
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-600">IPA(중요도-만족도) 분석 보고서</h2>
+            <p class="mt-4 text-sm text-gray-500">총 응답자: 49명</p>
+        </header>
+
+        <main class="space-y-12">
+            
+            <!-- 1. 범례 (Legend) -->
+            <section>
+                <h3 class="text-xl font-bold border-l-4 border-blue-500 pl-3 mb-4">1. 분석 항목 및 코드</h3>
+                <div class="overflow-x-auto bg-white rounded-lg shadow">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-gray-100 border-b">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 font-bold">코드</th>
+                                <th scope="col" class="px-6 py-3 font-bold">전체 항목명</th>
+                            </tr>
+                        </thead>
+                        <tbody id="legend-table-body">
+                           <!-- JavaScript will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 2. 기술 통계 요약 -->
+            <section>
+                <h3 class="text-xl font-bold border-l-4 border-blue-500 pl-3 mb-4">2. 기술 통계 요약</h3>
+                 <div class="overflow-x-auto bg-white rounded-lg shadow">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-gray-100 border-b">
+                            <tr>
+                                <th class="px-4 py-3 font-bold text-center">코드</th>
+                                <th class="px-4 py-3 font-bold text-center">중요도 평균</th>
+                                <th class="px-4 py-3 font-bold text-center">중요도 표준편차</th>
+                                <th class="px-4 py-3 font-bold text-center">만족도 평균</th>
+                                <th class="px-4 py-3 font-bold text-center">만족도 표준편차</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-table-body">
+                            <!-- JavaScript will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. IPA Matrix -->
+            <section>
+                <h3 class="text-xl font-bold border-l-4 border-blue-500 pl-3 mb-4">3. IPA 매트릭스 (중요도-만족도)</h3>
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+                    <div class="relative w-full aspect-square max-w-3xl mx-auto">
+                        <canvas id="ipaMatrixChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. 최종 인사이트 및 전략 제안 -->
+            <section>
+                <h3 class="text-xl font-bold border-l-4 border-blue-500 pl-3 mb-4">4. 최종 인사이트 및 전략 제안</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Quadrant 2: Concentrate Here -->
+                    <div class="bg-red-50 border border-red-200 p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-red-700">제2사분면: 집중 개선 영역 (Concentrate Here)</h4>
+                        <p class="text-sm text-gray-600 mt-1">주민들이 매우 중요하게 생각하지만, 현재 만족도는 낮은 항목입니다. 리모델링 시 자원 투입의 최우선 순위로 고려해야 합니다.</p>
+                        <ul id="quadrant2" class="mt-4 space-y-2 list-disc list-inside text-red-900">
+                           <!-- Populated by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Quadrant 1: Keep Up the Good Work -->
+                    <div class="bg-green-50 border border-green-200 p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-green-700">제1사분면: 현상 유지 영역 (Keep Up the Good Work)</h4>
+                        <p class="text-sm text-gray-600 mt-1">주민들의 중요도와 만족도가 모두 높은 항목입니다. 현재의 강점이므로 지속적으로 잘 유지하고 관리해야 합니다.</p>
+                        <ul id="quadrant1" class="mt-4 space-y-2 list-disc list-inside text-green-900">
+                           <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                    
+                    <!-- Quadrant 3: Low Priority -->
+                    <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-yellow-700">제3사분면: 저순위 관리 영역 (Low Priority)</h4>
+                        <p class="text-sm text-gray-600 mt-1">중요도와 만족도가 모두 낮아 개선의 우선순위가 낮습니다. 다른 핵심 영역 개선 후 여유 자원이 있을 때 고려할 수 있습니다.</p>
+                         <ul id="quadrant3" class="mt-4 space-y-2 list-disc list-inside text-yellow-900">
+                           <!-- Populated by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Quadrant 4: Possible Overkill -->
+                    <div class="bg-blue-50 border border-blue-200 p-6 rounded-lg shadow">
+                        <h4 class="font-bold text-lg text-blue-700">제4사분면: 과잉 관리 지양 (Possible Overkill)</h4>
+                        <p class="text-sm text-gray-600 mt-1">중요도는 낮지만 만족도가 높은 항목입니다. 현재 투입되는 자원이 과도할 수 있으므로, '집중 개선 영역'으로 자원을 재배치하는 것을 고려해볼 수 있습니다.</p>
+                        <ul id="quadrant4" class="mt-4 space-y-2 list-disc list-inside text-blue-900">
+                           <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 종합 제언 -->
+                <div class="mt-10 bg-white p-6 rounded-lg shadow">
+                    <h4 class="font-bold text-lg text-gray-900">종합 제언</h4>
+                    <p class="mt-2 text-gray-700">
+                        이번 IPA 분석 결과, <strong>'다목적실(H1)', '주방 및 공동 식당(H2)', '공동 작업장(H7)'</strong>이 주민들이 느끼는 중요도에 비해 만족도가 현저히 낮은 **'최우선 개선 과제'**로 나타났습니다. 
+                        한정된 리모델링 예산과 자원을 이 세 가지 공간의 기능과 환경을 획기적으로 개선하는 데 집중적으로 투입할 것을 제안합니다.
+                        <br><br>
+                        반면, '옥상 또는 야외 휴게 공간(H10)'은 상대적으로 중요도가 낮음에도 높은 만족도를 보이고 있어, 현재 수준의 유지 또는 관리 자원의 효율화를 고려해볼 수 있습니다. 
+                        주민들의 핵심 요구사항을 먼저 해결함으로써 리모델링의 효과와 만족도를 극대화하는 전략이 필요합니다.
+                    </p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const analysisData = {
+            items: [
+                { code: 'H1', name: '항목 1: 다목적실 (마을 총회, 행사, 모임 공간)', imp: 4.469, sat: 1.551, imp_std: 0.504, sat_std: 0.503 },
+                { code: 'H2', name: '항목 2: 주방 및 공동 식당 (주민 공동 식사, 요리 공간)', imp: 4.510, sat: 1.694, imp_std: 0.505, sat_std: 0.683 },
+                { code: 'H3', name: '항목 3: 경로당 (노인 휴게 및 교류 공간)', imp: 4.531, sat: 4.531, imp_std: 0.504, sat_std: 0.504 },
+                { code: 'H4', name: '항목 4: 체력 단련실 (운동 기구 비치 공간)', imp: 3.429, sat: 2.980, imp_std: 0.866, sat_std: 0.661 },
+                { code: 'H5', name: '항목 5: 샤워실 및 탈의실 (어업 활동 후 또는 운동 후 이용)', imp: 3.837, sat: 3.918, imp_std: 0.688, sat_std: 0.731 },
+                { code: 'H6', name: '항목 6: 작은 도서관 (독서 및 학습, 북카페형 휴식 공간)', imp: 2.959, sat: 2.939, imp_std: 0.611, sat_std: 0.592 },
+                { code: 'H7', name: '항목 7: 공동 작업장 (어구(漁具) 손질, 농산물 가공 등)', imp: 3.878, sat: 1.816, imp_std: 0.781, sat_std: 0.601 },
+                { code: 'H8', name: '항목 8: 프로그램실 (주민 교육, 취미 활동 공간)', imp: 3.878, sat: 2.918, imp_std: 0.754, sat_std: 0.759 },
+                { code: 'H9', name: '항목 9: 정보화 교육장 (컴퓨터, 프린터 이용 및 교육)', imp: 1.878, sat: 1.959, imp_std: 0.781, sat_std: 0.735 },
+                { code: 'H10', name: '항목 10: 옥상 또는 야외 휴게 공간 (전망, 휴식)', imp: 1.980, sat: 4.490, imp_std: 0.750, sat_std: 0.505 },
+                { code: 'H11', name: '항목 11: 창고 (마을 공동 물품 보관 공간)', imp: 1.776, sat: 2.551, imp_std: 0.685, sat_std: 0.503 }
+            ],
+            grandMean: {
+                imp: 3.3748,
+                sat: 2.8497
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Populate Legend Table
+            const legendTableBody = document.getElementById('legend-table-body');
+            analysisData.items.forEach(item => {
+                const row = `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-6 py-3 font-bold text-blue-600">${item.code}</td>
+                        <td class="px-6 py-3">${item.name}</td>
+                    </tr>`;
+                legendTableBody.innerHTML += row;
+            });
+
+            // Populate Stats Table
+            const statsTableBody = document.getElementById('stats-table-body');
+            analysisData.items.forEach(item => {
+                const row = `
+                    <tr class="border-b hover:bg-gray-50 text-center">
+                        <td class="px-4 py-3 font-bold text-blue-600">${item.code}</td>
+                        <td class="px-4 py-3">${item.imp.toFixed(3)}</td>
+                        <td class="px-4 py-3">${item.imp_std.toFixed(3)}</td>
+                        <td class="px-4 py-3">${item.sat.toFixed(3)}</td>
+                        <td class="px-4 py-3">${item.sat_std.toFixed(3)}</td>
+                    </tr>`;
+                statsTableBody.innerHTML += row;
+            });
+
+            // Populate Quadrant Insights
+            const q1 = document.getElementById('quadrant1');
+            const q2 = document.getElementById('quadrant2');
+            const q3 = document.getElementById('quadrant3');
+            const q4 = document.getElementById('quadrant4');
+
+            analysisData.items.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${item.code}:</strong> ${item.name.split(':')[1].trim()}`;
+                
+                if (item.imp >= analysisData.grandMean.imp && item.sat >= analysisData.grandMean.sat) {
+                    q1.appendChild(li);
+                } else if (item.imp >= analysisData.grandMean.imp && item.sat < analysisData.grandMean.sat) {
+                    q2.appendChild(li);
+                } else if (item.imp < analysisData.grandMean.imp && item.sat < analysisData.grandMean.sat) {
+                    q3.appendChild(li);
+                } else {
+                    q4.appendChild(li);
+                }
+            });
+            
+            // Create IPA Matrix Chart
+            const ctx = document.getElementById('ipaMatrixChart').getContext('2d');
+            Chart.register(ChartDataLabels);
+
+            const chartData = {
+                datasets: [{
+                    label: '분석 항목',
+                    data: analysisData.items.map(item => ({ x: item.sat, y: item.imp, code: item.code, name: item.name })),
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    pointRadius: 8,
+                    pointHoverRadius: 12,
+                }]
+            };
+
+            const ipaMatrixChart = new Chart(ctx, {
+                type: 'scatter',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    scales: {
+                        x: {
+                            beginAtZero: false,
+                            min: 1,
+                            max: 5,
+                            title: {
+                                display: true,
+                                text: '만족도 (Performance)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            min: 1,
+                            max: 5,
+                            title: {
+                                display: true,
+                                text: '중요도 (Importance)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                             grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const item = context.raw;
+                                    return [
+                                        `${item.code}: ${item.name}`,
+                                        `만족도: ${item.x.toFixed(3)}`,
+                                        `중요도: ${item.y.toFixed(3)}`
+                                    ];
+                                }
+                            },
+                            backgroundColor: '#334155',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            displayColors: false,
+                        },
+                        datalabels: {
+                            align: 'center',
+                            color: 'white',
+                            font: {
+                                weight: 'bold',
+                                size: 10,
+                            },
+                            formatter: function(value, context) {
+                                return value.code;
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                // --- Lines ---
+                                vLine: {
+                                    type: 'line',
+                                    xMin: analysisData.grandMean.sat,
+                                    xMax: analysisData.grandMean.sat,
+                                    borderColor: 'rgba(239, 68, 68, 0.7)',
+                                    borderWidth: 1.5,
+                                    borderDash: [6, 6]
+                                },
+                                hLine: {
+                                    type: 'line',
+                                    yMin: analysisData.grandMean.imp,
+                                    yMax: analysisData.grandMean.imp,
+                                    borderColor: 'rgba(239, 68, 68, 0.7)',
+                                    borderWidth: 1.5,
+                                    borderDash: [6, 6]
+                                },
+                                // --- Quadrant Labels ---
+                                q1Label: { type: 'label', xValue: (analysisData.grandMean.sat + 5) / 2, yValue: (analysisData.grandMean.imp + 5) / 2, content: '제1사분면 (현상 유지)', font: {size: 14, weight: 'bold'}, color: 'rgba(22, 163, 74, 0.8)' },
+                                q2Label: { type: 'label', xValue: (analysisData.grandMean.sat + 1) / 2, yValue: (analysisData.grandMean.imp + 5) / 2, content: '제2사분면 (집중 개선)', font: {size: 14, weight: 'bold'}, color: 'rgba(220, 38, 38, 0.8)' },
+                                q3Label: { type: 'label', xValue: (analysisData.grandMean.sat + 1) / 2, yValue: (analysisData.grandMean.imp + 1) / 2, content: '제3사분면 (저순위)', font: {size: 14, weight: 'bold'}, color: 'rgba(202, 138, 4, 0.8)' },
+                                q4Label: { type: 'label', xValue: (analysisData.grandMean.sat + 5) / 2, yValue: (analysisData.grandMean.imp + 1) / 2, content: '제4사분면 (과잉 지양)', font: {size: 14, weight: 'bold'}, color: 'rgba(37, 99, 235, 0.8)' },
+
+                                // --- Mean Value Labels (FIXED) ---
+                                satMeanLabel: {
+                                    type: 'label',
+                                    xValue: analysisData.grandMean.sat,
+                                    yValue: 1.1,
+                                    content: `만족도 평균: ${analysisData.grandMean.sat.toFixed(2)}`,
+                                    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                                    color: '#ef4444',
+                                    font: { size: 11, weight: 'bold'},
+                                    padding: { top: 4, bottom: 4},
+                                    yAdjust: 10,
+                                },
+                                impMeanLabel: {
+                                    type: 'label',
+                                    yValue: analysisData.grandMean.imp,
+                                    xValue: 1.25,
+                                    content: `중요도 평균: ${analysisData.grandMean.imp.toFixed(2)}`,
+                                    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                                    color: '#ef4444',
+                                    font: { size: 11, weight: 'bold'},
+                                    padding: { top: 4, bottom: 4},
+                                    xAdjust: 10,
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
